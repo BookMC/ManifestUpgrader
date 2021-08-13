@@ -1,21 +1,78 @@
 plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "maven-publish"
     id "java"
 }
 
+ext {
+    def env = System.getenv()
+    local = !env.GITHUB_ACTIONS
+    jdk = JavaVersion.current().getMajorVersion()
+}
+
 group "club.chachy"
-version "0.0.1"
+version "0.8.10${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
 
 repositories {
     mavenCentral()
 }
 
+configurations {
+    include
+    implemenation.extendsFrom(include)
+}
+
 dependencies {
-    implementation "com.google.code.gson:gson:2.8.7"
+    include "com.google.code.gson:gson:2.8.7"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }
 
+shadowJar {
+    archiveClassifier.set("")
+    configurations = [project.configurations.include]
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
 test {
     useJUnitPlatform()
+}
+
+tasks.build.dependsOn(tasks.shadowJar)
+
+publishing {
+    repositories {
+        maven {
+            def env = System.getenv()
+
+            boolean isEnvVarsAvailable = env.containsKey("MAVEN_USER") && env.containsKey("MAVEN_PASSWORD")
+
+            if (isEnvVarsAvailable) {
+                credentials {
+                    username env.get("MAVEN_USER")
+                    password env.get("MAVEN_PASSWORD")
+                }
+            }
+
+            url = !isEnvVarsAvailable ? "$buildDir/repository" : "https://maven.bookmc.org/releases/"
+        }
+    }
+
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = project.name
+                url = "https://github.com/BookMC/${project.name}"
+
+                developers {
+                    developer {
+                        name = "ChachyDev"
+                    }
+                }
+            }
+        }
+    }
 }
