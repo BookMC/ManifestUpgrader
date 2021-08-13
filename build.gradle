@@ -19,7 +19,7 @@ repositories {
 
 configurations {
     include
-    implemenation.extendsFrom(include)
+    implementation.extendsFrom(include)
 }
 
 dependencies {
