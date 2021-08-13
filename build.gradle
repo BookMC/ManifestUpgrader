@@ -10,8 +10,8 @@ ext {
     jdk = JavaVersion.current().getMajorVersion()
 }
 
-group "club.chachy"
-version "0.8.10${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
+group "org.bookmc"
+version "0.0.1${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
 
 repositories {
     mavenCentral()
